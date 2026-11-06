@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071a52"><title>InfiGen</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f6ff;color:#10234d;font:15px system-ui,Arial}
+header{background:linear-gradient(130deg,#06164b,#064fc5);color:white;padding:24px 20px 28px;border-radius:0 0 25px 25px}
+.brand{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:800}.mark{width:48px;height:48px;border:2px solid #19d9ff;border-radius:15px;display:grid;place-items:center;color:#ffd24a;font-size:38px}
+small{opacity:.8}.wrap{padding:18px;max-width:620px;margin:auto}.notice{background:#fff4d5;border:1px solid #edcf77;padding:13px;border-radius:12px;line-height:1.5;font-size:13px}
+.balance{margin-top:16px;background:linear-gradient(135deg,#06266e,#0872ed);color:white;padding:22px;border-radius:18px;box-shadow:0 8px 22px #0c3b8725}.balance strong{display:block;font-size:30px;margin-top:8px}
+.mode{margin-top:16px;background:white;border:1px solid #dce5f5;border-radius:15px;padding:17px}.mode h2,.panel h2{font-size:17px;margin:0 0 10px}
+.mode-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mode-option{display:block;border:1px solid #dce5f5;border-radius:12px;padding:12px;cursor:pointer}.mode-option input{margin-right:7px}.mode-option strong{display:block;margin-top:5px}.mode-option span{font-size:12px;color:#64748b}
+#liveMode:checked~.mode-options label[for=liveMode]{border:2px solid #d59b24;background:#fff8e7}
+#demoMode:checked~.mode-options label[for=demoMode]{border:2px solid #0872ed;background:#eef5ff}
+.live-state{display:none;margin-top:12px;background:#fff4d5;border:1px solid #edcf77;padding:12px;border-radius:10px;font-size:13px}
+#liveMode:checked~.live-state{display:block}
+.demo-state{display:block}#liveMode:checked~.demo-state{display:none}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}.tile,.panel{background:white;border:1px solid #dce5f5;border-radius:15px;padding:17px}.tile b{display:block;margin-top:7px}.tile span{font-size:24px}
+.panel{margin-top:15px}.row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #edf1f8;font-size:13px}.row:last-child{border:0}
+button{border:0;background:#0a54d5;color:white;padding:12px 16px;border-radius:10px;font-weight:700;width:100%;margin-top:12px}
+button.secondary{background:#e7eefb;color:#15346b}button:disabled{background:#9aa9c1}
+input[type=number],input[type=text]{width:100%;padding:12px;border:1px solid #cbd7eb;border-radius:9px;margin-top:8px;font:inherit}
+.action{margin-top:12px;padding-top:12px;border-top:1px solid #edf1f8}.status{font-size:13px;margin-top:10px;line-height:1.5}.transaction{font-size:12px;padding:9px 0;border-bottom:1px solid #edf1f8;overflow-wrap:anywhere}
+footer{text-align:center;padding:22px;color:#64748b;font-size:12px}
+
+.homebar{display:flex;gap:10px;align-items:center;margin:14px 0}.homebtn{width:auto;margin:0;padding:11px 16px}.menuwrap{position:relative}.menupanel{display:none;position:absolute;z-index:30;top:48px;left:0;width:min(290px,85vw);max-height:70vh;overflow:auto;background:#fff;border:1px solid #cbd7eb;border-radius:14px;box-shadow:0 12px 35px #071a5230;padding:8px}.menupanel.open{display:block}.menupanel a{display:block;padding:12px;color:#15346b;text-decoration:none;border-radius:9px;font-weight:650}.menupanel a:hover{background:#eef5ff}.secure-note{font-size:12px;line-height:1.5;color:#475569}.print-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.print-actions button{margin-top:8px}.security-state{padding:11px;border-radius:10px;background:#eef5ff;border:1px solid #cbdcf7;font-size:13px;line-height:1.5}
+
+/* User-selectable light/dark appearance */
+body.dark-theme{background:#0b1220;color:#e5edf9}
+body.dark-theme .notice{background:#332b16;border-color:#78632b;color:#f8e9bd}
+body.dark-theme .mode,body.dark-theme .tile,body.dark-theme .panel{background:#151f30;border-color:#34445c;color:#e5edf9}
+body.dark-theme .mode-option{border-color:#34445c;color:#e5edf9}
+body.dark-theme .mode-option span,body.dark-theme .secure-note,body.dark-theme footer{color:#aab8ce}
+body.dark-theme .row,body.dark-theme .action,body.dark-theme .transaction{border-color:#2a3950}
+body.dark-theme input[type=number],body.dark-theme input[type=text]{background:#0f1929;color:#e5edf9;border-color:#40516b}
+body.dark-theme .menupanel{background:#151f30;border-color:#34445c}
+body.dark-theme .menupanel a{color:#e5edf9}
+body.dark-theme .menupanel a:hover{background:#24344c}
+body.dark-theme button.secondary{background:#293a54;color:#e5edf9}
+body.dark-theme .security-state{background:#172b42;border-color:#345678;color:#dcecff}
+body.dark-theme .mode-options .mode-option{background:#151f30}
+body.dark-theme #demoMode:checked~.mode-options label[for=demoMode]{background:#183253}
+body.dark-theme #liveMode:checked~.mode-options label[for=liveMode]{background:#40351d}
+
+.auth-panel{background:white;border:1px solid #dce5f5;border-radius:16px;padding:18px;margin:16px 0}
+.auth-panel h2{font-size:19px;margin:0 0 8px}
+.auth-panel input{width:100%;padding:12px;border:1px solid #cbd7eb;border-radius:9px;margin-top:8px;font:inherit}
+.auth-panel button{margin-top:10px}
+.auth-message{font-size:13px;line-height:1.5;margin-top:10px}
+.auth-profile{background:#eef5ff;border:1px solid #cbdcf7;padding:12px;border-radius:10px;margin:12px 0;font-size:13px;line-height:1.6;white-space:pre-line}
+body.dark-theme .auth-panel{background:#151f30;border-color:#34445c;color:#e5edf9}
+body.dark-theme .auth-panel input{background:#0f1929;color:#e5edf9;border-color:#40516b}
+body.dark-theme .auth-profile{background:#172b42;border-color:#345678;color:#dcecff}
+</style></head><body>
+<header><div class="brand"><div class="mark">∞</div><div>InfiGen<br><small>Bank • Transact • Grow</small></div></div></header>
+<main class="wrap" id="overview">
+<section class="auth-panel" id="authPanel">
+  <h2>InfiGen Customer Access</h2>
+  <p class="secure-note">Sign in or create a customer profile. Live financial services remain disabled.</p>
+  <div id="loginForm">
+    <b>Customer login</b>
+    <input id="loginEmail" type="email" maxlength="255" autocomplete="username" placeholder="Email address">
+    <input id="loginPassword" type="password" maxlength="72" autocomplete="current-password" placeholder="Password">
+    <button type="button" id="loginButton">Sign in</button>
+    <button type="button" class="secondary" id="showRegister">Create an account</button>
+  </div>
+  <div id="registerForm" hidden>
+    <b>New customer registration</b>
+    <input id="registerName" type="text" maxlength="150" autocomplete="name" placeholder="Full name">
+    <input id="registerEmail" type="email" maxlength="255" autocomplete="email" placeholder="Email address">
+    <input id="registerPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="Phone number (optional)">
+    <input id="registerPassword" type="password" maxlength="72" autocomplete="new-password" placeholder="Password (10–72 characters, letters and numbers)">
+    <button type="button" id="registerButton">Create customer account</button>
+    <button type="button" class="secondary" id="showLogin">Back to login</button>
+  </div>
+  <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+  <div id="customerProfile" hidden>
+    <div class="auth-profile" id="profileDetails"></div>
+    <button type="button" class="secondary" id="logoutButton">Sign out</button>
+  </div>
+</section>
+<div id="appContent" hidden>
+<div class="homebar"><div class="menuwrap"><button class="homebtn" id="homeMenuButton" aria-expanded="false" aria-controls="homeMenu">⌂ Home ▾</button><nav class="menupanel" id="homeMenu" aria-label="Application menu"><a href="#overview" onclick="closeHomeMenu()">⌂ Overview</a><a href="#demo-actions" onclick="closeHomeMenu()">⇄ Transactions</a><a href="#activity" onclick="closeHomeMenu()">▤ Transaction history</a><a href="#statements" onclick="closeHomeMenu()">▧ Receipts & statements</a><a href="#live-readiness" onclick="closeHomeMenu()">◎ Live account readiness</a><a href="#channels" onclick="closeHomeMenu()">⇧ Payment channels</a><a href="#security" onclick="closeHomeMenu()">⬡ Security & audit logs</a>
+<a href="#theme-settings" id="themeMenuItem" role="button" aria-pressed="false" aria-label="Switch to dark mode" onclick="toggleTheme();closeHomeMenu();return false">☾ Switch to dark mode</a></nav></div><small>Navigate InfiGen</small></div>
+<div class="notice"><b>Development preview</b><br>Demo mode uses simulated, on-device transactions only. No real money moves and no real account is created. Live banking remains reserved and unavailable until authorized providers, secure backend services, compliance checks and production approval are completed. Do not enter real identity or banking details.</div>
+<section class="mode">
+<h2>Choose application mode</h2>
+<input id="demoMode" type="radio" name="appMode" checked>
+<input id="liveMode" type="radio" name="appMode">
+<div class="mode-options">
+<label class="mode-option" for="demoMode">Demo mode<strong>Try sample features</strong><span>Simulated balance and transaction history</span></label>
+<label class="mode-option" for="liveMode">Live mode<strong>Reserved · locked</strong><span>For future authorized activation</span></label>
+</div>
+<div class="live-state"><b>Live functionality is reserved.</b><br>It will remain locked until InfiGen is connected to approved banking and payment partners, identity verification, a secure server-side ledger, fraud controls and the required regulatory approvals. Selecting this option does not initiate payments or transmit personal data.</div>
+<div class="demo-state"><div class="status">Demo mode is active. All amounts and transaction references below are fictional and stored only for this current screen session.</div></div>
+</section>
+<section class="balance"><small id="balanceLabel">DEMO BALANCE</small><strong id="balance">KSh 10,000.00</strong><small>Sample funds only · no cash value</small></section>
+<div class="grid">
+<div class="tile"><span>↓</span><b>Deposit funds</b><small>Demo simulation</small></div>
+<div class="tile"><span>↑</span><b>Withdraw funds</b><small>Demo simulation</small></div>
+<div class="tile"><span>⇄</span><b>Transfer money</b><small>Demo simulation</small></div>
+<div class="tile"><span>▤</span><b>Statements</b><small>Demo transaction log</small></div>
+</div>
+<section class="panel demo-state" id="demo-actions"><h2>Try demo transactions</h2>
+<div class="action"><b>Deposit (simulated)</b><input id="depositAmount" type="number" min="1" step="1" placeholder="Amount in KSh"><button onclick="demoTransaction('deposit')">Add demo funds</button></div>
+<div class="action"><b>Withdraw (simulated)</b><input id="withdrawAmount" type="number" min="1" step="1" placeholder="Amount in KSh"><button class="secondary" onclick="demoTransaction('withdraw')">Withdraw demo funds</button></div>
+<div class="action"><b>Transfer (simulated)</b><input id="recipient" type="text" maxlength="40" placeholder="Demo recipient name or reference"><input id="transferAmount" type="number" min="1" step="1" placeholder="Amount in KSh"><button class="secondary" onclick="demoTransaction('transfer')">Send demo transfer</button></div>
+<div id="demoStatus" class="status" aria-live="polite">Demo transactions do not contact banks, M-PESA, Airtel Money or any external service.</div>
+</section>
+<section class="panel" id="activity"><h2>Recent demo activity</h2><div id="transactions"><div class="transaction">No demo transactions yet.</div></div></section>
+<section class="panel" id="live-readiness"><h2>Live account readiness</h2>
+<div class="row"><span>National ID verification</span><b>Authorized provider required</b></div>
+<div class="row"><span>Verified email and mobile</span><b>Secure backend required</b></div>
+<div class="row"><span>Unique account number</span><b>Server-side issuance required</b></div>
+<div class="row"><span>Activation threshold</span><b>KSh 500 · pending live rules</b></div>
+<div class="row"><span>Deposit ceiling</span><b>Provider / legal limits apply</b></div>
+</section>
+<section class="panel" id="channels"><h2>Live payment channels · reserved</h2>
+<div class="row"><span>M-PESA / Safaricom</span><b>Authorized Daraja setup</b></div>
+<div class="row"><span>Airtel Money</span><b>Partner API required</b></div>
+<div class="row"><span>Kenyan banks</span><b>Banking partner required</b></div>
+<div class="row"><span>Other licensed providers</span><b>Contract and API required</b></div>
+</section>
+<section class="panel" id="statements"><h2>Receipts & statements</h2><p class="secure-note">Print-ready demo documents reflect only simulated transactions in this app session. They are not bank-issued statements.</p><div class="print-actions"><button onclick="printLatestReceipt()">Print latest receipt</button><button class="secondary" onclick="printStatement()">Print statement</button></div><div id="printStatus" class="status" aria-live="polite">No receipt has been printed yet.</div></section>
+<section class="panel" id="security"><h2>Security & anonymous audit</h2><div id="securityState" class="security-state" role="status">Defensive monitoring active. No external scanning or intrusion attempts are performed.</div><div class="row"><span>Audit records</span><b id="auditCount">0</b></div><div class="row"><span>Last integrity hash</span><b id="lastHash">Pending</b></div><div class="row"><span>Detection assessment</span><b id="detectionAssessment">No findings</b></div><div class="row"><span>Application state</span><b id="appSecurityMode">Active</b></div><button class="secondary" onclick="exportAuditLog()">Export anonymous audit log</button><button class="secondary" onclick="resumeAfterReview()">Resume after security review</button><p class="secure-note">Records use UTC timestamps and SHA-256 hash chaining where Web Crypto is available. Missing timestamps are integrity anomalies. Client-side logs are not tamper-proof; production evidence requires trusted server-side storage and key management. Anonymous means personal identifiers are excluded from these audit records; hosting infrastructure may still process network metadata.</p></section></div></main><footer>InfiGen · Powered by Infinity Cyber Technologies<br>Live services remain disabled until authorized integration and compliance approval.</footer>
+<script>
+(function(){
+ const key='infigen-theme';
+ function applyTheme(theme){
+  const dark=theme==='dark';
+  document.body.classList.toggle('dark-theme',dark);
+  const item=document.getElementById('themeMenuItem');
+  if(item){item.textContent=dark?'☀ Switch to light mode':'☾ Switch to dark mode';item.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');item.setAttribute('aria-pressed',String(dark));}
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',dark?'#0b1220':'#071a52');
+ }
+ window.toggleTheme=function(){
+  const next=document.body.classList.contains('dark-theme')?'light':'dark';
+  try{localStorage.setItem(key,next)}catch(e){}
+  applyTheme(next);
+ };
+ let saved='light';
+ try{saved=localStorage.getItem(key)||'light'}catch(e){}
+ applyTheme(saved);
+})();
+
+(function(){
+ const storageKey='infigen-demo-session-v1';let balance=10000;const history=[];
+ try{const saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved&&Number.isSafeInteger(saved.balance)&&saved.balance>=0&&Array.isArray(saved.history)){balance=saved.balance;saved.history.slice(0,200).forEach(t=>{if(t&&['DEPOSIT','WITHDRAW','TRANSFER'].includes(t.type)&&Number.isSafeInteger(t.amount)&&t.amount>0&&typeof t.id==='string'&&typeof t.time==='string')history.push({type:t.type,amount:t.amount,id:t.id.slice(0,80),time:t.time.slice(0,80)});});}}catch(e){}
+ const money=n=>'KSh '+n.toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+ function render(){try{localStorage.setItem(storageKey,JSON.stringify({balance,history:history.slice(0,200)}));}catch(e){}document.getElementById('balance').textContent=money(balance);document.getElementById('transactions').innerHTML=history.length?history.map(t=>'<div class="transaction"><b>'+t.type+'</b> · '+money(t.amount)+'<br><span>'+t.id+' · '+t.time+'</span></div>').join(''):'<div class="transaction">No demo transactions yet.</div>';}
+ window.demoTransaction=function(type){
+  if(!document.getElementById('demoMode').checked){document.getElementById('demoStatus').textContent='Demo actions are disabled while Live mode is selected. Live mode is reserved and locked.';return;}
+  const field=type==='deposit'?'depositAmount':type==='withdraw'?'withdrawAmount':'transferAmount';
+  const amount=Number(document.getElementById(field).value);
+  if(!Number.isSafeInteger(amount)||amount<=0){document.getElementById('demoStatus').textContent='Enter a valid whole-number amount greater than zero.';return;}
+  if(type!=='deposit'&&amount>balance){document.getElementById('demoStatus').textContent='Insufficient demo balance.';return;}
+  if(type==='transfer'&&!document.getElementById('recipient').value.trim()){document.getElementById('demoStatus').textContent='Enter a demo recipient reference.';return;}
+  balance+=type==='deposit'?amount:-amount;
+  const id='DEMO-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase();
+  history.unshift({type:type.toUpperCase(),amount,id,time:new Date().toLocaleString()});
+  document.getElementById('demoStatus').textContent='Simulated '+type+' recorded. Reference: '+id+'. No real money moved.';
+  document.getElementById(field).value='';render();
+ };
+ document.getElementById('liveMode').addEventListener('change',function(){document.getElementById('demoStatus').textContent='Live mode is reserved. No live banking actions are available.';});
+ render();
+})();
+
+(function(){
+ const audit=[],invalidAttempts=[];let previousHash="GENESIS",hibernating=false;
+ const $=id=>document.getElementById(id),utc=()=>new Date().toISOString();
+ async function sha256(s){if(!window.crypto||!window.crypto.subtle)return "UNAVAILABLE";const h=await window.crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+ async function log(kind,assessment,detail){const now=Date.now(),valid=Number.isFinite(now)&&now>0;const r={timestamp:valid?utc():null,timestamp_ms:valid?now:0,kind,assessment:valid?assessment:"NEGATIVE_TIMESTAMP_INTEGRITY",detail:String(detail||"").slice(0,140),anonymous:true,previous_hash:previousHash};r.hash=await sha256(JSON.stringify(r));previousHash=r.hash;audit.push(r);$("auditCount").textContent=audit.length;$("lastHash").textContent=r.hash==="UNAVAILABLE"?"Web Crypto unavailable":r.hash.slice(0,20)+"…";$("detectionAssessment").textContent=r.assessment;if(r.assessment.startsWith("NEGATIVE"))$("securityState").textContent="A negative integrity/security finding was recorded. Review the audit trail.";return r;}
+ window.closeHomeMenu=()=>{$("homeMenu").classList.remove("open");$("homeMenuButton").setAttribute("aria-expanded","false");};
+ window.handleAndroidBack=()=>{const menu=$("homeMenu");if(menu&&menu.classList.contains("open")){window.closeHomeMenu();return true;}if(location.hash){history.back();return true;}return false;};
+ $("homeMenuButton").addEventListener("click",()=>{const v=$("homeMenu").classList.toggle("open");$("homeMenuButton").setAttribute("aria-expanded",String(v));});
+ document.addEventListener("click",e=>{if(!e.target.closest(".menuwrap"))closeHomeMenu();});
+ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const fmt=n=>"KSh "+Number(n).toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
+ function printDoc(title,body){const w=window.open("","_blank");if(!w){$("printStatus").textContent="Print window blocked. Allow pop-ups and try again.";return false;}w.document.write("<!doctype html><html><head><title>"+title+"</title><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{font:14px Arial;padding:24px;color:#111}h1{font-size:22px}table{width:100%;border-collapse:collapse}td,th{padding:9px;border-bottom:1px solid #ccc;text-align:left}.muted{font-size:12px;color:#555}</style></head><body>"+body+"<p class='muted'>InfiGen DEMO DOCUMENT · Not a bank-issued document · "+utc()+"</p><script>window.onload=()=>window.print();<\/script></body></html>");w.document.close();return true;}
+ function rows(){return Array.from(document.querySelectorAll("#transactions .transaction")).filter(x=>!x.textContent.includes("No demo transactions")).map(el=>{const t=el.innerText.split("\n"),m=t[0].match(/KSh\s*([\d,.]+)/);return {type:t[0].split(" · ")[0],amount:m?Number(m[1].replace(/,/g,"")):0,ref:(t[1]||"").split(" · ")[0],time:(t[1]||"").split(" · ").slice(1).join(" · ")};});}
+ window.printLatestReceipt=()=>{const r=rows()[0];if(!r){$("printStatus").textContent="No demo transaction is available to print.";return;}if(printDoc("InfiGen demo receipt","<h1>InfiGen — Transaction receipt</h1><p><b>Reference:</b> "+esc(r.ref)+"</p><p><b>Type:</b> "+esc(r.type)+"</p><p><b>Amount:</b> "+fmt(r.amount)+"</p><p><b>Recorded:</b> "+esc(r.time)+"</p><p><b>Status:</b> SIMULATED — NO MONEY MOVED</p>")){$("printStatus").textContent="Receipt prepared for browser/device printing.";log("RECEIPT_PRINT","POSITIVE","Demo receipt print requested");}};
+ window.printStatement=()=>{const rs=rows(),tr=rs.map(r=>"<tr><td>"+esc(r.ref)+"</td><td>"+esc(r.type)+"</td><td>"+fmt(r.amount)+"</td><td>"+esc(r.time)+"</td></tr>").join("");if(printDoc("InfiGen demo statement","<h1>InfiGen — Demo statement</h1><p>Opening demo balance: KSh 10,000.00</p><table><thead><tr><th>Reference</th><th>Type</th><th>Amount</th><th>Time</th></tr></thead><tbody>"+(tr||"<tr><td colspan='4'>No transactions recorded</td></tr>")+"</tbody></table><p><b>Current demo balance:</b> "+esc($("balance").textContent)+"</p><p>All entries are simulated.</p>")){$("printStatus").textContent="Statement prepared for browser/device printing.";log("STATEMENT_PRINT","POSITIVE","Demo statement print requested");}};
+ window.exportAuditLog=()=>{const blob=new Blob([JSON.stringify({format:"InfiGen anonymous defensive audit v1",exported_at:utc(),records:audit},null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="infigen-anonymous-audit.json";a.click();URL.revokeObjectURL(url);log("AUDIT_EXPORT","POSITIVE","Audit export requested");};
+ function hibernate(reason){if(hibernating)return;hibernating=true;$("appSecurityMode").textContent="HIBERNATED";document.querySelectorAll(".demo-state button").forEach(b=>b.disabled=true);$("securityState").textContent="Protective hibernation: "+reason+". Demo actions are paused pending review.";log("PROTECTIVE_HIBERNATION","NEGATIVE",reason);}
+ window.resumeAfterReview=()=>{if(!hibernating){$("securityState").textContent="Application is already active.";return;}hibernating=false;$("appSecurityMode").textContent="Active";document.querySelectorAll(".demo-state button").forEach(b=>b.disabled=false);$("securityState").textContent="Demo mode resumed after local review. Live functionality remains reserved.";log("HIBERNATION_RELEASE","POSITIVE","Local review acknowledged");};
+ const original=window.demoTransaction;
+ if(typeof original==="function")window.demoTransaction=function(type){if(hibernating)return;const before=$("demoStatus").textContent;original(type);const after=$("demoStatus").textContent;if(after!==before){if(/Enter a valid|Insufficient|Enter a demo recipient/i.test(after)){invalidAttempts.push(Date.now());log("TRANSACTION_VALIDATION_REJECTION","NEGATIVE",after);while(invalidAttempts.length&&Date.now()-invalidAttempts[0]>60000)invalidAttempts.shift();if(invalidAttempts.length>=5)hibernate("Repeated invalid transaction attempts detected locally");}else if(/Simulated .* recorded/.test(after))log("DEMO_TRANSACTION","POSITIVE","Simulated "+type+" recorded");}};
+ window.addEventListener("error",()=>log("CLIENT_ERROR","NEGATIVE","Unexpected client-side error"));
+ log("APP_SESSION_START","POSITIVE","Anonymous local session started");
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  const API = location.protocol === "file:" ? "http://127.0.0.1:8080" : location.origin;
+  const TOKEN_KEY = "infigen-access-token";
+  const $ = id => document.getElementById(id);
+  let busy = false;
+
+  function message(text,error){
+    $("authMessage").textContent = text;
+    $("authMessage").style.color = error ? "#b42318" : "";
+  }
+
+  function setBusy(value){
+    busy = value;
+    ["loginButton","registerButton","logoutButton"].forEach(id=>{
+      if($(id)) $(id).disabled = value;
+    });
+  }
+
+  async function request(path,options){
+    const headers = {"Content-Type":"application/json"};
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if(token) headers.Authorization = "Bearer " + token;
+
+    const response = await fetch(API + path,{
+      ...options,
+      headers:{...headers,...(options && options.headers || {})}
+    });
+
+    let data = {};
+    try { data = await response.json(); } catch(e) {}
+
+    if(!response.ok){
+      if(response.status === 401 && path === "/api/auth/me"){
+        sessionStorage.removeItem(TOKEN_KEY);
+      }
+      throw new Error(data.error || "Request could not be completed.");
+    }
+    return data;
+  }
+
+  function showAuthenticated(data){
+    const user = data.user || {};
+    const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+
+    $("profileDetails").textContent = [
+      "Customer: " + (user.full_name || "Customer"),
+      "Email: " + (user.email || ""),
+      "Verification: " + (user.is_verified ? "Verified" : "Pending"),
+      ...accounts.map(a=>"Account: "+a.account_number+" · "+a.currency+" · "+a.status),
+      "Live payments: Disabled"
+    ].join("\n");
+
+    $("customerProfile").hidden = false;
+    $("loginForm").hidden = true;
+    $("registerForm").hidden = true;
+    $("appContent").hidden = false;
+    message("Authenticated successfully. Account information loaded from the server.");
+  }
+
+  function showLoggedOut(){
+    $("customerProfile").hidden = true;
+    $("appContent").hidden = true;
+    $("loginForm").hidden = false;
+    $("registerForm").hidden = true;
+  }
+
+  $("showRegister").addEventListener("click",()=>{
+    $("loginForm").hidden = true;
+    $("registerForm").hidden = false;
+    message("");
+  });
+
+  $("showLogin").addEventListener("click",()=>{
+    $("registerForm").hidden = true;
+    $("loginForm").hidden = false;
+    message("");
+  });
+
+  $("loginButton").addEventListener("click",async()=>{
+    if(busy) return;
+    setBusy(true);
+    try{
+      const result = await request("/api/auth/login",{
+        method:"POST",
+        body:JSON.stringify({
+          email:$("loginEmail").value.trim(),
+          password:$("loginPassword").value
+        })
+      });
+      if(!result.access_token) throw new Error("The server did not return an access token.");
+      sessionStorage.setItem(TOKEN_KEY,result.access_token);
+      const profile = await request("/api/auth/me");
+      showAuthenticated(profile);
+      $("loginPassword").value = "";
+    }catch(error){
+      sessionStorage.removeItem(TOKEN_KEY);
+      message(error.message,true);
+    }finally{setBusy(false);}
+  });
+
+  $("registerButton").addEventListener("click",async()=>{
+    if(busy) return;
+    setBusy(true);
+    try{
+      const result = await request("/api/auth/register",{
+        method:"POST",
+        body:JSON.stringify({
+          full_name:$("registerName").value.trim(),
+          email:$("registerEmail").value.trim(),
+          phone:$("registerPhone").value.trim() || null,
+          password:$("registerPassword").value
+        })
+      });
+      if(!result.access_token) throw new Error("The server did not return an access token.");
+      sessionStorage.setItem(TOKEN_KEY,result.access_token);
+      const profile = await request("/api/auth/me");
+      showAuthenticated(profile);
+      $("registerPassword").value = "";
+      message("Registration successful. Account activation and email verification are still pending.");
+    }catch(error){
+      sessionStorage.removeItem(TOKEN_KEY);
+      message(error.message,true);
+    }finally{setBusy(false);}
+  });
+
+  $("logoutButton").addEventListener("click",()=>{
+    sessionStorage.removeItem(TOKEN_KEY);
+    $("loginPassword").value = "";
+    showLoggedOut();
+    message("You have signed out.");
+  });
+
+  async function restoreSession(){
+    if(!sessionStorage.getItem(TOKEN_KEY)){
+      showLoggedOut();
+      return;
+    }
+    try{
+      const profile = await request("/api/auth/me");
+      showAuthenticated(profile);
+    }catch(error){
+      sessionStorage.removeItem(TOKEN_KEY);
+      showLoggedOut();
+      message("Your session has expired. Please sign in again.",true);
+    }
+  }
+
+  restoreSession();
+})();
+</script>
+
+</body></html>

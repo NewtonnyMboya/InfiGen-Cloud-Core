@@ -1,0 +1,27 @@
+# Secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+
+# Dependencies and generated files
+node_modules/
+**/node_modules/
+*.log
+.DS_Store
+
+# Test data and local backups
+backend/login-test.json
+backend/profile-test.json
+*.before-auth
+*.before-*
+*.bak
+
+# Extracted APK contents
+extracted/
+*.apk
+
+# Local build outputs
+dist/
+build/
