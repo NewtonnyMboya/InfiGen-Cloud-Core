@@ -13,10 +13,15 @@ module.exports = async function handler(req, res) {
       database: "connected"
     });
   } catch (error) {
-    console.error("Database health check failed");
+    const code = typeof error?.code === "string" && /^[A-Z0-9_]{1,32}$/.test(error.code)
+      ? error.code
+      : "CONNECTION_FAILED";
+    console.error("Database health check failed", { code });
     return res.status(503).json({
       application: "InfiGen",
-      database: "unavailable"
+      database: "unavailable",
+      databaseUrlConfigured: Boolean(process.env.DATABASE_URL),
+      errorCode: code
     });
   }
 };
