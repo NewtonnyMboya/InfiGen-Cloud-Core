@@ -55,16 +55,6 @@ app.get("/api/health/database", async (req, res) => {
 
 app.use("/api/auth", authRouter);
 
-app.use("/api", (req, res) => {
-  res.status(404).json({ error: "API route not found." });
-});
-
-app.use((error, req, res, next) => {
-  console.error("Unhandled request error:", error.code || error.name || "Error");
-  if (res.headersSent) return next(error);
-  res.status(500).json({ error: "The server could not complete this request." });
-});
-
 app.get("/api/status", (req, res) => {
   res.json({
     backend: "running",
@@ -73,6 +63,18 @@ app.get("/api/status", (req, res) => {
     mpesa: "not_configured",
     production: false
   });
+});
+
+// Keep the API fallback after every registered API endpoint.
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API route not found." });
+});
+
+// Centralized JSON error response for API and application failures.
+app.use((error, req, res, next) => {
+  console.error("Unhandled request error:", error.code || error.name || "Error");
+  if (res.headersSent) return next(error);
+  res.status(500).json({ error: "The server could not complete this request." });
 });
 
 // Export the Express application for Vercel's serverless Node.js runtime.
