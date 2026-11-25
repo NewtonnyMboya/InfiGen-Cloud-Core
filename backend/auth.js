@@ -76,9 +76,10 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ error: "Invalid phone number." });
   }
 
-  const client = await pool.connect();
+  let client;
 
   try {
+    client = await pool.connect();
     await client.query("BEGIN");
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -120,16 +121,18 @@ router.post("/register", async (req, res) => {
       expires_in: 3600
     });
   } catch (error) {
-    await client.query("ROLLBACK");
+    if (client) {
+      try { await client.query("ROLLBACK"); } catch { /* Preserve the original registration error. */ }
+    }
 
     if (error.code === "23505") {
       return res.status(409).json({ error: "An account with this email already exists." });
     }
 
-    console.error("Registration failed:", error.code || "database error");
+    console.error("Registration failed:", { code: error.code || "UNKNOWN", name: error.name || "Error" });
     return res.status(500).json({ error: "Registration could not be completed." });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 

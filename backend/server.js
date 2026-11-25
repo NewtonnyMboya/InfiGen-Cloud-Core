@@ -10,6 +10,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const pool = require("./db");
 const { router: authRouter } = require("./auth");
+const emailRouter = require("./email");
 
 const app = express();
 
@@ -54,28 +55,49 @@ app.get("/api/health/database", async (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/email", emailRouter);
 
 app.get("/api/status", (req, res) => {
   res.json({
     backend: "running",
     database: "check /api/health/database",
     authentication: "enabled",
+    email: "resend_test_endpoint_enabled",
     mpesa: "not_configured",
     production: false
   });
 });
 
-const PORT = process.env.PORT || 8080;
-
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`InfiGen backend running on port ${PORT}`);
+// Keep the API fallback after every registered API endpoint.
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API route not found." });
 });
 
-async function shutdown() {
-  server.close();
-  await pool.end();
-  process.exit(0);
-}
+// Centralized JSON error response for API and application failures.
+app.use((error, req, res, next) => {
+  console.error("Unhandled request error:", error.code || error.name || "Error");
+  if (res.headersSent) return next(error);
+  res.status(500).json({ error: "The server could not complete this request." });
+});
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+// Export the Express application for Vercel's serverless Node.js runtime.
+module.exports = app;
+
+// Preserve the standalone listener for local development and Termux deployments.
+if (require.main === module) {
+  const PORT = process.env.PORT || 8080;
+
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`InfiGen backend running on port ${PORT}`);
+  });
+
+  async function shutdown() {
+    server.close(async () => {
+      await pool.end();
+      process.exit(0);
+    });
+  }
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+}
