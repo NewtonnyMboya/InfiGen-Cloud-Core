@@ -10,6 +10,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const pool = require("./db");
 const { router: authRouter } = require("./auth");
+const emailRouter = require("./email");
 
 const app = express();
 
@@ -54,12 +55,14 @@ app.get("/api/health/database", async (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/email", emailRouter);
 
 app.get("/api/status", (req, res) => {
   res.json({
     backend: "running",
     database: "check /api/health/database",
     authentication: "enabled",
+    email: "resend_test_endpoint_enabled",
     mpesa: "not_configured",
     production: false
   });
