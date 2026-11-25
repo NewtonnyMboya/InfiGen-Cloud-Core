@@ -65,17 +65,24 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 8080;
+// Export the Express application for Vercel's serverless Node.js runtime.
+module.exports = app;
 
-const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`InfiGen backend running on port ${PORT}`);
-});
+// Preserve the standalone listener for local development and Termux deployments.
+if (require.main === module) {
+  const PORT = process.env.PORT || 8080;
 
-async function shutdown() {
-  server.close();
-  await pool.end();
-  process.exit(0);
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`InfiGen backend running on port ${PORT}`);
+  });
+
+  async function shutdown() {
+    server.close(async () => {
+      await pool.end();
+      process.exit(0);
+    });
+  }
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
-
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
