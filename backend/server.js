@@ -64,7 +64,7 @@ app.get("/api/status", (req, res) => {
     authentication: "enabled",
     email: "resend_test_endpoint_enabled",
     mpesa: "not_configured",
-    production: false
+    production: process.env.NODE_ENV === "production"
   });
 });
 
